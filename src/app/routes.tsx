@@ -1,10 +1,10 @@
 import { Route, Routes } from 'react-router'
+import { Home } from './home'
 
 export function PageRoutes() {
   return (
     <Routes>
-      <Route path="/" element={<div>Home Page</div>} />
-      <Route path="/about" element={<div>About Page</div>} />
+      <Route path="/" element={<Home />} />
     </Routes>
   )
 }
