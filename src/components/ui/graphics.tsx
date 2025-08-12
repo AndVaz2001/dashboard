@@ -1,4 +1,4 @@
-// src/components/ui/table.tsx
+// src/components/ui/graphics.tsx
 import { useEffect, useState } from 'react'
 import {
   BarChart,

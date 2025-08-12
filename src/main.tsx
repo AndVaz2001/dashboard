@@ -1,13 +1,16 @@
-import { StrictMode } from 'react'
-import { createRoot } from 'react-dom/client'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { PageRoutes } from './app/routes'
 import { BrowserRouter } from 'react-router'
 import './index.css'
 
-createRoot(document.getElementById('root')!).render(
-  <StrictMode>
+export const App = () => {
+  const queryClient = new QueryClient()
+
+  return (
     <BrowserRouter>
-      <PageRoutes />
+      <QueryClientProvider client={queryClient}>
+        <PageRoutes />
+      </QueryClientProvider>
     </BrowserRouter>
-  </StrictMode>,
-)
+  )
+}
