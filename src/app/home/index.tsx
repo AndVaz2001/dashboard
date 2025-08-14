@@ -36,13 +36,14 @@ export function Home() {
   const ROI_API = import.meta.env.VITE_ROI_API_URL
   const REACH_API = import.meta.env.VITE_REACH_API_URL
   const ENGAGEMENT_API = import.meta.env.VITE_ENGAGEMENT_API_URL
+  const PATIENTS_API = import.meta.env.VITE_PATIENTS_API_URL
   const TINYBIRD_TOKEN = import.meta.env.VITE_TINYBIRD_TOKEN
 
   // Fetch top-card metrics
   const fetchRoiData = async () => {
     try {
       const response = await fetch(
-        `${ROI_API}?start_date=2024-01-01&end_date=2024-12-31&token=${TINYBIRD_TOKEN}`,
+        `${ROI_API}?start_date=2024-01-01&end_date=2025-08-01&token=${TINYBIRD_TOKEN}`,
       )
       if (!response.ok) throw new Error('Failed to fetch ROI data')
       const result = await response.json()
@@ -56,7 +57,7 @@ export function Home() {
   const fetchReachData = async () => {
     try {
       const response = await fetch(
-        `${REACH_API}?start_date=2024-01-01&end_date=2024-12-31&token=${TINYBIRD_TOKEN}`,
+        `${REACH_API}?start_date=2024-01-01&end_date=2025-08-01&token=${TINYBIRD_TOKEN}`,
       )
       if (!response.ok) throw new Error('Failed to fetch Reach data')
       const result = await response.json()
@@ -70,7 +71,7 @@ export function Home() {
   const fetchEngagementData = async () => {
     try {
       const response = await fetch(
-        `${ENGAGEMENT_API}?start_date=2024-01-01&end_date=2024-12-31&token=${TINYBIRD_TOKEN}`,
+        `${ENGAGEMENT_API}?start_date=2024-01-01&end_date=2025-08-01&token=${TINYBIRD_TOKEN}`,
       )
       if (!response.ok) throw new Error('Failed to fetch Engagement data')
       const result = await response.json()
@@ -90,10 +91,10 @@ export function Home() {
       for (const { year, month } of months) {
         // Patients Called
         const patientsRes = await fetch(
-          `http://localhost:7181/v0/pipes/patients_called_per_month.json?year=${year}&month=${month}&token=${TINYBIRD_TOKEN}`,
+          `${PATIENTS_API}?year=${year}&month=${month}&token=${TINYBIRD_TOKEN}`,
         )
         const patientsJson = await patientsRes.json()
-        const patientsCount = patientsJson.data?.[0]?.patients_called ?? 0
+        const patientsCount = patientsJson.data?.[0]?.patients_called_count ?? 0
 
         // Reach
         const reachRes = await fetch(
