@@ -133,9 +133,8 @@ export function Home() {
           </CardFooter>
         </Card>
       </div>
-
       {/* Tabla/gráfico principal */}
-      <Table />
+      <Table /> {/* Pass table data to the Table component */}
     </div>
   )
 }
