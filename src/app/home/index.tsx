@@ -6,135 +6,197 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card'
-import { Table } from '@/components/ui/graphics'
+import {
+  ChartContainer,
+  ChartTooltip,
+  ChartTooltipContent,
+  ChartLegend,
+  ChartLegendContent,
+} from '@/components/ui/chart'
+import { ComposedChart, Bar, Line, XAxis, YAxis, CartesianGrid } from 'recharts'
 import { useState, useEffect } from 'react'
+
+// Helper: June 2024 → June 2025
+function getMonthRange() {
+  const months: { year: number; month: number }[] = []
+  let start = new Date(2024, 5) // June = index 5
+  for (let i = 0; i < 12; i++) {
+    months.push({ year: start.getFullYear(), month: start.getMonth() + 1 })
+    start.setMonth(start.getMonth() + 1)
+  }
+  return months
+}
 
 export function Home() {
   const [roi, setRoi] = useState<number | null>(null)
   const [reach, setReach] = useState<number | null>(null)
   const [engagement, setEngagement] = useState<number | null>(null)
+  const [chartData, setChartData] = useState<any[]>([])
 
-  // Function to fetch ROI data
+  const ROI_API = import.meta.env.VITE_ROI_API_URL
+  const REACH_API = import.meta.env.VITE_REACH_API_URL
+  const ENGAGEMENT_API = import.meta.env.VITE_ENGAGEMENT_API_URL
+  const TINYBIRD_TOKEN = import.meta.env.VITE_TINYBIRD_TOKEN
+
+  // Fetch top-card metrics
   const fetchRoiData = async () => {
     try {
       const response = await fetch(
-        `${process.env.VITE_ROI_API_URL}?start_date=2024-01-01&end_date=2024-12-31&token=${process.env.VITE_TINYBIRD_TOKEN}`,
+        `${ROI_API}?start_date=2024-01-01&end_date=2024-12-31&token=${TINYBIRD_TOKEN}`,
       )
-      if (!response.ok) {
-        throw new Error('Failed to fetch ROI data')
-      }
+      if (!response.ok) throw new Error('Failed to fetch ROI data')
       const result = await response.json()
-      const roiValue = result.data?.[0]?.ROI || null
-      setRoi(roiValue)
+      setRoi(result.data?.[0]?.ROI || null)
     } catch (error) {
       console.error('Error fetching ROI data:', error)
       setRoi(null)
     }
   }
 
-  // Function to fetch Reach data
   const fetchReachData = async () => {
     try {
       const response = await fetch(
-        `${process.env.VITE_REACH_API_URL}?start_date=2024-01-01&end_date=2024-12-31&token=${process.env.VITE_TINYBIRD_TOKEN}`,
+        `${REACH_API}?start_date=2024-01-01&end_date=2024-12-31&token=${TINYBIRD_TOKEN}`,
       )
-      if (!response.ok) {
-        throw new Error('Failed to fetch Reach data')
-      }
+      if (!response.ok) throw new Error('Failed to fetch Reach data')
       const result = await response.json()
-      const reachValue = result.data?.[0]?.reach_followup || null
-      setReach(reachValue)
+      setReach(result.data?.[0]?.reach_followup || null)
     } catch (error) {
       console.error('Error fetching Reach data:', error)
       setReach(null)
     }
   }
 
-  // Function to fetch Engagement data
   const fetchEngagementData = async () => {
     try {
       const response = await fetch(
-        `${process.env.VITE_ENGAGEMENT_API_URL}?start_date=2024-01-01&end_date=2024-12-31&token=${process.env.VITE_TINYBIRD_TOKEN}`,
+        `${ENGAGEMENT_API}?start_date=2024-01-01&end_date=2024-12-31&token=${TINYBIRD_TOKEN}`,
       )
-      if (!response.ok) {
-        throw new Error('Failed to fetch Engagement data')
-      }
+      if (!response.ok) throw new Error('Failed to fetch Engagement data')
       const result = await response.json()
-      const engagementValue = result.data?.[0]?.engagement_percentage || null
-      setEngagement(engagementValue)
+      setEngagement(result.data?.[0]?.engagement_percentage || null)
     } catch (error) {
       console.error('Error fetching Engagement data:', error)
       setEngagement(null)
     }
   }
 
-  // Fetch data when the component mounts
+  // Fetch monthly chart data
+  const fetchMonthlyData = async () => {
+    try {
+      const months = getMonthRange()
+      const results: any[] = []
+
+      for (const { year, month } of months) {
+        // Patients Called
+        const patientsRes = await fetch(
+          `http://localhost:7181/v0/pipes/patients_called_per_month.json?year=${year}&month=${month}&token=${TINYBIRD_TOKEN}`,
+        )
+        const patientsJson = await patientsRes.json()
+        const patientsCount = patientsJson.data?.[0]?.patients_called ?? 0
+
+        // Reach
+        const reachRes = await fetch(
+          `${REACH_API}?start_date=${year}-${String(month).padStart(2, '0')}-01&end_date=${year}-${String(month).padStart(2, '0')}-28&token=${TINYBIRD_TOKEN}`,
+        )
+        const reachJson = await reachRes.json()
+        const reachValue = reachJson.data?.[0]?.reach_followup ?? 0
+
+        // Engagement
+        const engagementRes = await fetch(
+          `${ENGAGEMENT_API}?start_date=${year}-${String(month).padStart(2, '0')}-01&end_date=${year}-${String(month).padStart(2, '0')}-28&token=${TINYBIRD_TOKEN}`,
+        )
+        const engagementJson = await engagementRes.json()
+        const engagementValue =
+          engagementJson.data?.[0]?.engagement_percentage ?? 0
+
+        results.push({
+          month: `${new Date(year, month - 1).toLocaleString('default', { month: 'short' })} ${year}`,
+          Patients: patientsCount,
+          Reach: reachValue,
+          Engagement: engagementValue,
+        })
+      }
+
+      setChartData(results)
+    } catch (error) {
+      console.error('Error fetching chart data:', error)
+      setChartData([])
+    }
+  }
+
   useEffect(() => {
     fetchRoiData()
     fetchReachData()
     fetchEngagementData()
+    fetchMonthlyData()
   }, [])
+
+  const chartConfig = {
+    Patients: { label: 'Patients Called', color: '#3b82f6' },
+    Reach: { label: 'Reach', color: '#10b981' },
+    Engagement: { label: 'Engagement', color: '#f59e0b' },
+  }
 
   return (
     <div className="flex flex-col gap-6 p-6 bg-gray-50">
-      {/* Cards arriba */}
+      {/* Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {/* Card 1 */}
-        <Card className="border border-gray-200 hover:shadow-lg transition-shadow duration-300">
+        <Card>
           <CardHeader>
-            <CardTitle className="text-lg text-gray-900">ROI Formula</CardTitle>
+            <CardTitle>ROI Formula</CardTitle>
             <CardDescription>Measure your return on investment</CardDescription>
           </CardHeader>
           <CardContent>
-            <p className="text-gray-700">
-              {roi !== null ? `ROI: ${roi.toFixed(2)}` : 'Loading...'}
-            </p>
+            {roi !== null ? `ROI: ${roi.toFixed(2)}` : 'Loading...'}
           </CardContent>
-          <CardFooter>
-            <span className="text-sm text-gray-500">Last updated: Today</span>
-          </CardFooter>
+          <CardFooter>Last updated: Today</CardFooter>
         </Card>
 
-        {/* Card 2 */}
-        <Card className="border border-gray-200 hover:shadow-lg transition-shadow duration-300">
+        <Card>
           <CardHeader>
-            <CardTitle className="text-lg text-gray-900">
-              Reach Overview
-            </CardTitle>
+            <CardTitle>Reach Overview</CardTitle>
             <CardDescription>Track your audience reach</CardDescription>
           </CardHeader>
           <CardContent>
-            <p className="text-gray-700">
-              {reach !== null ? `Reach: ${reach.toFixed(2)}` : 'Loading...'}
-            </p>
+            {reach !== null ? `Reach: ${reach.toFixed(2)}` : 'Loading...'}
           </CardContent>
-          <CardFooter>
-            <span className="text-sm text-gray-500">Last updated: Today</span>
-          </CardFooter>
+          <CardFooter>Last updated: Today</CardFooter>
         </Card>
 
-        {/* Card 3 */}
-        <Card className="border border-gray-200 hover:shadow-lg transition-shadow duration-300">
+        <Card>
           <CardHeader>
-            <CardTitle className="text-lg text-gray-900">
-              Engagement Overview
-            </CardTitle>
+            <CardTitle>Engagement Overview</CardTitle>
             <CardDescription>Track audience engagement</CardDescription>
           </CardHeader>
           <CardContent>
-            <p className="text-gray-700">
-              {engagement !== null
-                ? `Engagement: ${engagement.toFixed(2)}`
-                : 'Loading...'}
-            </p>
+            {engagement !== null
+              ? `Engagement: ${engagement.toFixed(2)}`
+              : 'Loading...'}
           </CardContent>
-          <CardFooter>
-            <span className="text-sm text-gray-500">Last updated: Today</span>
-          </CardFooter>
+          <CardFooter>Last updated: Today</CardFooter>
         </Card>
       </div>
-      {/* Tabla/gráfico principal */}
-      <Table /> {/* Pass table data to the Table component */}
+
+      {/* Chart */}
+      <Card className="p-4">
+        <ChartContainer config={chartConfig}>
+          <ComposedChart data={chartData}>
+            <CartesianGrid strokeDasharray="3 3" />
+            <XAxis dataKey="month" />
+            <YAxis />
+            <ChartTooltip content={<ChartTooltipContent />} />
+            <ChartLegend content={<ChartLegendContent />} />
+            <Bar dataKey="Patients" fill="var(--color-Patients)" />
+            <Line type="monotone" dataKey="Reach" stroke="var(--color-Reach)" />
+            <Line
+              type="monotone"
+              dataKey="Engagement"
+              stroke="var(--color-Engagement)"
+            />
+          </ComposedChart>
+        </ChartContainer>
+      </Card>
     </div>
   )
 }
