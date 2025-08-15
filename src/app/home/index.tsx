@@ -274,7 +274,7 @@ export function Home() {
 
         <Card>
           <CardHeader>
-            <CardTitle>Reach Overview</CardTitle>
+            <CardTitle>Reach Percentage</CardTitle>
             <CardDescription>Track your audience reach</CardDescription>
           </CardHeader>
           <CardContent>
@@ -285,7 +285,7 @@ export function Home() {
 
         <Card>
           <CardHeader>
-            <CardTitle>Engagement Overview</CardTitle>
+            <CardTitle>Engagement Percentage</CardTitle>
             <CardDescription>Track audience engagement</CardDescription>
           </CardHeader>
           <CardContent>
@@ -298,7 +298,7 @@ export function Home() {
       </div>
 
       {/* Chart */}
-      <Card className="p-4">
+      <Card className="p-4 max-w-xxl">
         <ChartContainer config={chartConfig}>
           <ComposedChart data={chartData}>
             <CartesianGrid strokeDasharray="3 3" />
