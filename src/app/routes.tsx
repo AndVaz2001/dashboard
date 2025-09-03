@@ -1,10 +1,14 @@
-import { Route, Routes } from 'react-router'
+import { Route, Routes } from 'react-router-dom'
+import SidebarLayout from '@/components/ui/sidebarlayout'
+import { Severities } from './severities/index_severities'
 import { Home } from './home'
-
 export function PageRoutes() {
   return (
     <Routes>
-      <Route path="/" element={<Home />} />
+      <Route element={<SidebarLayout />}>
+        <Route path="/" element={<Home />} />
+        <Route path="/severities" element={<Severities />} />
+      </Route>
     </Routes>
   )
 }
