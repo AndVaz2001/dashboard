@@ -15,7 +15,7 @@ import {
 } from '@/components/ui/chart'
 import { ComposedChart, Bar, Line, XAxis, YAxis, CartesianGrid } from 'recharts'
 import { useState, useEffect, useMemo } from 'react'
-import { Calendar28 } from '@/components/ui/datepicker'
+import { useDateContext } from '@/components/ui/date-context'
 
 // ==== utils ====
 type ChartPoint = {
@@ -29,20 +29,17 @@ function pad(n: number) {
   return String(n).padStart(2, '0')
 }
 function ymd(y: number, m: number, d: number) {
-  // local-date safe YYYY-MM-DD formatter
   return `${y}-${pad(m)}-${pad(d)}`
 }
 function startOfMonth(y: number, m1to12: number) {
   return new Date(y, m1to12 - 1, 1)
 }
 function endOfMonth(y: number, m1to12: number) {
-  // Day 0 of next month => last day of current month
   return new Date(y, m1to12, 0)
 }
 function clampDate(date: Date, min: Date, max: Date) {
   return date < min ? min : date > max ? max : date
 }
-// Get inclusive list of (year, month) pairs between two dates
 function getMonthRange(start: Date, end: Date) {
   const s = new Date(start.getFullYear(), start.getMonth(), 1)
   const e = new Date(end.getFullYear(), end.getMonth(), 1)
@@ -59,8 +56,6 @@ function formatLabel(y: number, m1to12: number) {
     month: 'short',
   })} ${y}`
 }
-
-// Build safe month-bounded range (respect overall start/end)
 function monthBoundedRange(
   y: number,
   m: number,
@@ -79,6 +74,9 @@ function monthBoundedRange(
 
 // ==== component ====
 export function Home() {
+  // 👇 Dates now come from layout-level context
+  const { startDate, endDate } = useDateContext()
+
   // Cards
   const [roi, setRoi] = useState<number | null>(null)
   const [reach, setReach] = useState<number | null>(null)
@@ -87,24 +85,12 @@ export function Home() {
   // Chart
   const [chartData, setChartData] = useState<ChartPoint[]>([])
 
-  // Date filters (default: Jun 1, 2024 → Jun 30, 2025)
-  const [startDate, setStartDate] = useState(new Date(2024, 5, 1))
-  const [endDate, setEndDate] = useState(new Date(2025, 5, 30))
-
   // Env vars (Vite)
   const ROI_API = import.meta.env.VITE_ROI_API_URL as string
   const REACH_API = import.meta.env.VITE_REACH_API_URL as string
   const ENGAGEMENT_API = import.meta.env.VITE_ENGAGEMENT_API_URL as string
   const PATIENTS_API = import.meta.env.VITE_PATIENTS_API_URL as string
   const TINYBIRD_TOKEN = import.meta.env.VITE_TINYBIRD_TOKEN as string
-
-  // Guard: keep start <= end
-  useEffect(() => {
-    if (startDate > endDate) {
-      // If user picks an earlier end, snap start to end
-      setStartDate(endDate)
-    }
-  }, [startDate, endDate])
 
   const chartConfig = useMemo(
     () => ({
@@ -191,10 +177,8 @@ export function Home() {
             endDate,
           )
 
-          // patients endpoint is per year & month
           const patientsUrl = `${PATIENTS_API}?year=${year}&month=${month}&token=${TINYBIRD_TOKEN}`
 
-          // fetch all three in parallel for the month
           const [patientsRes, reachRes, engagementRes] = await Promise.all([
             fetch(patientsUrl),
             fetch(
@@ -211,18 +195,15 @@ export function Home() {
             engagementRes.json(),
           ])
 
-          // NOTE: per your sample, the field is "patients_called_count"
-          const patientsCount =
-            patientsJson?.data?.[0]?.patients_called_count ?? 0
-          const reachValue = reachJson?.data?.[0]?.reach_followup ?? 0
-          const engagementValue =
-            engagementJson?.data?.[0]?.engagement_percentage ?? 0
-
           points.push({
             month: formatLabel(year, month),
-            Patients: Number(patientsCount),
-            Reach: Number(reachValue),
-            Engagement: Number(engagementValue),
+            Patients: Number(
+              patientsJson?.data?.[0]?.patients_called_count ?? 0,
+            ),
+            Reach: Number(reachJson?.data?.[0]?.reach_followup ?? 0),
+            Engagement: Number(
+              engagementJson?.data?.[0]?.engagement_percentage ?? 0,
+            ),
           })
         }
 
@@ -244,21 +225,7 @@ export function Home() {
   ])
 
   return (
-    <div className="flex flex-col gap-6 p-6 bg-gray-50">
-      {/* Date Filters */}
-      <div className="flex flex-wrap gap-6">
-        <Calendar28
-          label="Start Date"
-          selectedDate={startDate}
-          onChange={(d) => d && setStartDate(d)}
-        />
-        <Calendar28
-          label="End Date"
-          selectedDate={endDate}
-          onChange={(d) => d && setEndDate(d)}
-        />
-      </div>
-
+    <div className="flex flex-col gap-6">
       {/* Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <Card>
