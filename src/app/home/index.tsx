@@ -17,6 +17,17 @@ import { ComposedChart, Bar, Line, XAxis, YAxis, CartesianGrid } from 'recharts'
 import { useState, useEffect, useMemo } from 'react'
 import { useDateContext } from '@/components/ui/date-context'
 
+// ==== API Configuration ====
+const API_BASE = import.meta.env.VITE_API_BASE_URL
+const TINYBIRD_TOKEN = import.meta.env.VITE_TINYBIRD_TOKEN
+
+const API_ENDPOINTS = {
+  roi: `${API_BASE}/ROI_query.json`,
+  reach: `${API_BASE}/reach_followup.json`,
+  engagement: `${API_BASE}/engagement_followup.json`,
+  patients: `${API_BASE}/patients_called_per_month.json`,
+} as const
+
 // ==== utils ====
 type ChartPoint = {
   month: string
@@ -85,12 +96,6 @@ export function Home() {
   // Chart
   const [chartData, setChartData] = useState<ChartPoint[]>([])
 
-  const ROI_API = import.meta.env.VITE_ROI_API_URL as string
-  const REACH_API = import.meta.env.VITE_REACH_API_URL as string
-  const ENGAGEMENT_API = import.meta.env.VITE_ENGAGEMENT_API_URL as string
-  const PATIENTS_API = import.meta.env.VITE_PATIENTS_API_URL as string
-  const TINYBIRD_TOKEN = import.meta.env.VITE_TINYBIRD_TOKEN as string
-
   const chartConfig = useMemo(
     () => ({
       Patients: { label: 'Patients Called', color: '#3b82f6' },
@@ -116,7 +121,7 @@ export function Home() {
     const fetchRoiData = async () => {
       try {
         const res = await fetch(
-          `${ROI_API}?start_date=${s}&end_date=${e}&token=${TINYBIRD_TOKEN}`,
+          `${API_ENDPOINTS.roi}?start_date=${s}&end_date=${e}&token=${TINYBIRD_TOKEN}`,
         )
         if (!res.ok) throw new Error('ROI fetch failed')
         const json = await res.json()
@@ -130,7 +135,7 @@ export function Home() {
     const fetchReachData = async () => {
       try {
         const res = await fetch(
-          `${REACH_API}?start_date=${s}&end_date=${e}&token=${TINYBIRD_TOKEN}`,
+          `${API_ENDPOINTS.reach}?start_date=${s}&end_date=${e}&token=${TINYBIRD_TOKEN}`,
         )
         if (!res.ok) throw new Error('Reach fetch failed')
         const json = await res.json()
@@ -144,7 +149,7 @@ export function Home() {
     const fetchEngagementData = async () => {
       try {
         const res = await fetch(
-          `${ENGAGEMENT_API}?start_date=${s}&end_date=${e}&token=${TINYBIRD_TOKEN}`,
+          `${API_ENDPOINTS.engagement}?start_date=${s}&end_date=${e}&token=${TINYBIRD_TOKEN}`,
         )
         if (!res.ok) throw new Error('Engagement fetch failed')
         const json = await res.json()
@@ -158,7 +163,7 @@ export function Home() {
     fetchRoiData()
     fetchReachData()
     fetchEngagementData()
-  }, [startDate, endDate, ROI_API, REACH_API, ENGAGEMENT_API, TINYBIRD_TOKEN])
+  }, [startDate, endDate])
 
   // ====== fetch chart ======
   useEffect(() => {
@@ -176,15 +181,15 @@ export function Home() {
             endDate,
           )
 
-          const patientsUrl = `${PATIENTS_API}?year=${year}&month=${month}&token=${TINYBIRD_TOKEN}`
+          const patientsUrl = `${API_ENDPOINTS.patients}?year=${year}&month=${month}&token=${TINYBIRD_TOKEN}`
 
           const [patientsRes, reachRes, engagementRes] = await Promise.all([
             fetch(patientsUrl),
             fetch(
-              `${REACH_API}?start_date=${startStr}&end_date=${endStr}&token=${TINYBIRD_TOKEN}`,
+              `${API_ENDPOINTS.reach}?start_date=${startStr}&end_date=${endStr}&token=${TINYBIRD_TOKEN}`,
             ),
             fetch(
-              `${ENGAGEMENT_API}?start_date=${startStr}&end_date=${endStr}&token=${TINYBIRD_TOKEN}`,
+              `${API_ENDPOINTS.engagement}?start_date=${startStr}&end_date=${endStr}&token=${TINYBIRD_TOKEN}`,
             ),
           ])
 
@@ -214,14 +219,7 @@ export function Home() {
     }
 
     run()
-  }, [
-    startDate,
-    endDate,
-    PATIENTS_API,
-    REACH_API,
-    ENGAGEMENT_API,
-    TINYBIRD_TOKEN,
-  ])
+  }, [startDate, endDate])
 
   return (
     <div className="flex flex-col gap-6">

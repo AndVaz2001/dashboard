@@ -1,8 +1,19 @@
-// Updated Severities component
 import { PieChartComponent } from '@/components/ui/PieChartComponent'
 import { TwoMetricCards } from '@/components/ui/TwoMetricCards'
 import { useDateContext } from '@/components/ui/date-context'
 
+// ==== API Configuration ====
+const API_BASE = import.meta.env.VITE_API_BASE_URL
+const TINYBIRD_TOKEN = import.meta.env.VITE_TINYBIRD_TOKEN
+
+const API_ENDPOINTS = {
+  severityDistribution: `${API_BASE}/severity_distribution.json`,
+  highSeverityAlerts: `${API_BASE}/high_severity_alerts_distribution.json`,
+  topAlert: `${API_BASE}/most_frequent_high_severity_alert.json`,
+  highSeverityCount: `${API_BASE}/high_severity_count.json`,
+} as const
+
+// ==== Utils ====
 function pad(n: number) {
   return String(n).padStart(2, '0')
 }
@@ -11,30 +22,29 @@ function ymd(y: number, m: number, d: number) {
   return `${y}-${pad(m)}-${pad(d)}`
 }
 
+// ==== Component ====
 export function Severities() {
   const { startDate, endDate } = useDateContext()
-  const SeverityPercentageURL = import.meta.env
-    .VITE_SEVERITIES_PERCENTAGE_API_URL
-  const HighSeverityURL = import.meta.env.VITE_HIGH_SEVERITY_ALERTS_API_URL
-  const topAlertUrl = import.meta.env.VITE_TOP_ALERT_API_URL
-  const highSeverityCountUrl = import.meta.env.VITE_HIGH_SEVERITY_COUNT_API_URL
-  const token = import.meta.env.VITE_TINYBIRD_TOKEN
 
-  const start_date = ymd(
+  const startDateStr = ymd(
     startDate.getFullYear(),
     startDate.getMonth() + 1,
     startDate.getDate(),
   )
-  const end_date = ymd(
+  const endDateStr = ymd(
     endDate.getFullYear(),
     endDate.getMonth() + 1,
     endDate.getDate(),
   )
 
-  const url1 = `${SeverityPercentageURL}?start_date=${start_date}&end_date=${end_date}&token=${token}`
-  const url2 = `${HighSeverityURL}?min_percentage=5.0&start_date=${start_date}&end_date=${end_date}&token=${token}`
-  const topAlertApiUrl = `${topAlertUrl}?start_date=${start_date}&end_date=${end_date}&token=${token}`
-  const highSeverityApiUrl = `${highSeverityCountUrl}?start_date=${start_date}&end_date=${end_date}&token=${token}`
+  // Build API URLs
+  const severityDistributionUrl = `${API_ENDPOINTS.severityDistribution}?start_date=${startDateStr}&end_date=${endDateStr}&token=${TINYBIRD_TOKEN}`
+
+  const highSeverityAlertsUrl = `${API_ENDPOINTS.highSeverityAlerts}?min_percentage=5.0&start_date=${startDateStr}&end_date=${endDateStr}&token=${TINYBIRD_TOKEN}`
+
+  const topAlertApiUrl = `${API_ENDPOINTS.topAlert}?start_date=${startDateStr}&end_date=${endDateStr}&token=${TINYBIRD_TOKEN}`
+
+  const highSeverityApiUrl = `${API_ENDPOINTS.highSeverityCount}?start_date=${startDateStr}&end_date=${endDateStr}&token=${TINYBIRD_TOKEN}`
 
   return (
     <div className="p-6 space-y-6">
@@ -45,14 +55,14 @@ export function Severities() {
         <PieChartComponent
           title="Security Severity Distribution"
           description="Current security incident severity levels"
-          url={url1}
+          url={severityDistributionUrl}
           nameKey="severity_level"
           valueKey="percentage"
         />
         <PieChartComponent
           title="High Severity Alerts Distribution"
           description="Alert types with >5% occurrence rate"
-          url={url2}
+          url={highSeverityAlertsUrl}
           nameKey="alert_group"
           valueKey="total_percentage"
         />
