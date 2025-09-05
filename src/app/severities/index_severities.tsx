@@ -13,27 +13,28 @@ function ymd(y: number, m: number, d: number) {
 
 export function Severities() {
   const { startDate, endDate } = useDateContext()
-  const baseUrl = import.meta.env.VITE_SEVERITIES_PERCENTAGE_API_URL
-  const baseUrl2 = import.meta.env.VITE_HIGH_SEVERITY_ALERTS_API_URL
+  const SeverityPercentageURL = import.meta.env
+    .VITE_SEVERITIES_PERCENTAGE_API_URL
+  const HighSeverityURL = import.meta.env.VITE_HIGH_SEVERITY_ALERTS_API_URL
   const topAlertUrl = import.meta.env.VITE_TOP_ALERT_API_URL
   const highSeverityCountUrl = import.meta.env.VITE_HIGH_SEVERITY_COUNT_API_URL
   const token = import.meta.env.VITE_TINYBIRD_TOKEN
 
-  const s = ymd(
+  const start_date = ymd(
     startDate.getFullYear(),
     startDate.getMonth() + 1,
     startDate.getDate(),
   )
-  const e = ymd(
+  const end_date = ymd(
     endDate.getFullYear(),
     endDate.getMonth() + 1,
     endDate.getDate(),
   )
 
-  const url1 = `${baseUrl}?start_date=${s}&end_date=${e}&token=${token}`
-  const url2 = `${baseUrl2}?min_percentage=5.0&start_date=${s}&end_date=${e}&token=${token}`
-  const topAlertApiUrl = `${topAlertUrl}?start_date=${s}&end_date=${e}&token=${token}`
-  const highSeverityApiUrl = `${highSeverityCountUrl}?start_date=${s}&end_date=${e}&token=${token}`
+  const url1 = `${SeverityPercentageURL}?start_date=${start_date}&end_date=${end_date}&token=${token}`
+  const url2 = `${HighSeverityURL}?min_percentage=5.0&start_date=${start_date}&end_date=${end_date}&token=${token}`
+  const topAlertApiUrl = `${topAlertUrl}?start_date=${start_date}&end_date=${end_date}&token=${token}`
+  const highSeverityApiUrl = `${highSeverityCountUrl}?start_date=${start_date}&end_date=${end_date}&token=${token}`
 
   return (
     <div className="p-6 space-y-6">

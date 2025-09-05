@@ -74,7 +74,7 @@ function monthBoundedRange(
 
 // ==== component ====
 export function Home() {
-  // 👇 Dates now come from layout-level context
+  //  Dates now come from layout-level context
   const { startDate, endDate } = useDateContext()
 
   // Cards
@@ -85,7 +85,6 @@ export function Home() {
   // Chart
   const [chartData, setChartData] = useState<ChartPoint[]>([])
 
-  // Env vars (Vite)
   const ROI_API = import.meta.env.VITE_ROI_API_URL as string
   const REACH_API = import.meta.env.VITE_REACH_API_URL as string
   const ENGAGEMENT_API = import.meta.env.VITE_ENGAGEMENT_API_URL as string

@@ -1,5 +1,5 @@
 import { Route, Routes } from 'react-router-dom'
-import SidebarLayout from '@/components/ui/sidebarlayout'
+import SidebarLayout from '@/components/ui/LayoutComponents'
 import { Severities } from './severities/index_severities'
 import { Home } from './home'
 export function PageRoutes() {

@@ -18,10 +18,8 @@ import {
 } from '@/components/ui/sidebar'
 import { Home as HomeIcon, AlertTriangle } from 'lucide-react'
 
-// ✅ Named import — your datepicker exports Calendar28
 import { Calendar28 } from '@/components/ui/datepicker'
 
-// Date state shared via context
 import { DateProvider, useDateContext } from './date-context'
 
 function DateFilterBar() {
@@ -97,7 +95,7 @@ export default function SidebarLayout() {
 
           {/* Sidebar footer */}
           <SidebarFooter>
-            <p className="text-xs text-muted-foreground">© 2025 My App</p>
+            <p className="text-xs text-muted-foreground">Tucuvi Dashboard</p>
           </SidebarFooter>
 
           <SidebarRail />
