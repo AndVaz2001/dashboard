@@ -37,7 +37,7 @@ export function TwoMetricCards({
   const [topAlert, setTopAlert] = useState<MetricCardData>({
     title: 'Top Alert Type',
     value: 'Loading...',
-    description: 'Most frequent alert in selected period',
+    description: 'Most frequent high alert in selected period',
     icon: AlertTriangle,
     color: 'text-amber-600',
     loading: true,
