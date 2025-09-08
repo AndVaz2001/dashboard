@@ -105,7 +105,7 @@ export function PieChartComponent({
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
           </div>
         ) : (
-          <PieChart width={400} height={400}>
+          <PieChart width={500} height={500}>
             <Pie
               data={chartData}
               dataKey="value"
