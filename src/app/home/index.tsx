@@ -107,12 +107,12 @@ export function Home() {
 
   // ====== fetch cards ======
   useEffect(() => {
-    const s = ymd(
+    const start_date = ymd(
       startDate.getFullYear(),
       startDate.getMonth() + 1,
       startDate.getDate(),
     )
-    const e = ymd(
+    const end_date = ymd(
       endDate.getFullYear(),
       endDate.getMonth() + 1,
       endDate.getDate(),
@@ -121,7 +121,7 @@ export function Home() {
     const fetchRoiData = async () => {
       try {
         const res = await fetch(
-          `${API_ENDPOINTS.roi}?start_date=${s}&end_date=${e}&token=${TINYBIRD_TOKEN}`,
+          `${API_ENDPOINTS.roi}?start_date=${start_date}&end_date=${end_date}&token=${TINYBIRD_TOKEN}`,
         )
         if (!res.ok) throw new Error('ROI fetch failed')
         const json = await res.json()
@@ -135,7 +135,7 @@ export function Home() {
     const fetchReachData = async () => {
       try {
         const res = await fetch(
-          `${API_ENDPOINTS.reach}?start_date=${s}&end_date=${e}&token=${TINYBIRD_TOKEN}`,
+          `${API_ENDPOINTS.reach}?start_date=${start_date}&end_date=${end_date}&token=${TINYBIRD_TOKEN}`,
         )
         if (!res.ok) throw new Error('Reach fetch failed')
         const json = await res.json()
@@ -149,7 +149,7 @@ export function Home() {
     const fetchEngagementData = async () => {
       try {
         const res = await fetch(
-          `${API_ENDPOINTS.engagement}?start_date=${s}&end_date=${e}&token=${TINYBIRD_TOKEN}`,
+          `${API_ENDPOINTS.engagement}?start_date=${start_date}&end_date=${end_date}&token=${TINYBIRD_TOKEN}`,
         )
         if (!res.ok) throw new Error('Engagement fetch failed')
         const json = await res.json()
